@@ -3,15 +3,15 @@ BIN    := spacejump
 LABEL  := com.spacejump.daemon
 PLIST  := $(HOME)/Library/LaunchAgents/$(LABEL).plist
 
-CFLAGS := -fobjc-arc -fmodules -Wall -Wextra -Wno-unused-parameter -O2
-FRAMEWORKS := -framework AppKit -framework Carbon -framework Foundation
+SWIFTFLAGS := -O -swift-version 6 -parse-as-library
+FRAMEWORKS := -framework AppKit -framework Carbon
 
 .PHONY: all clean install uninstall load unload reload
 
 all: $(BIN)
 
-$(BIN): spacejump.m
-	clang $(CFLAGS) $(FRAMEWORKS) -o $@ $<
+$(BIN): spacejump.swift
+	swiftc $(SWIFTFLAGS) $(FRAMEWORKS) -o $@ $<
 
 clean:
 	rm -f $(BIN)

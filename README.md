@@ -1,7 +1,8 @@
 # spacejump
 
 Jump straight to a macOS Desktop from the keyboard. No animation, no swipe
-synthesis, no Accessibility permission, SIP stays on.
+synthesis, no Accessibility permission, SIP stays on. A single Swift file,
+built with `swiftc`, no package dependencies.
 
 ```sh
 make
@@ -104,9 +105,10 @@ than fatal.
 
 ## Requirements and limits
 
-- Apple Silicon, macOS 27. Verified end to end on **27.0, build 26A428**, SIP
-  enabled: build, enumeration, switching, bounds handling, LaunchAgent, hotkeys
-  and SIGHUP reload. Earlier macOS versions are untested — the bridge operations
+- Apple Silicon, macOS 27, Swift 6 toolchain (Xcode 26 or the Command Line
+  Tools). Verified end to end on **27.0, build 26A428**, SIP enabled: build,
+  enumeration, switching, bounds handling, LaunchAgent, hotkeys and SIGHUP
+  reload. Earlier macOS versions are untested — the bridge operations
   are private, and `spacejump check` reports if the ABI moved.
 - No Accessibility permission: hotkeys use Carbon `RegisterEventHotKey` rather
   than an event tap.
