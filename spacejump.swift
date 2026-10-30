@@ -179,6 +179,17 @@ func readDesktops() throws -> [Desktop] {
     return desktops
 }
 
+// Every Space on one display, fullscreen and tiled included. Activation has to
+// hide these too: if the outgoing Space is a fullscreen one and is left shown,
+// its window stays composited over the target Desktop's windows.
+@MainActor
+func allSpaceIDs(onDisplay identifier: String) -> [UInt64] {
+    guard let displays = SkyLight.managedDisplaySpaces(),
+          let display = displays.first(where: { $0["Display Identifier"] as? String == identifier }),
+          let members = display["Spaces"] as? [[String: Any]] else { return [] }
+    return members.compactMap { $0["id64"] as? UInt64 }.filter { $0 != 0 }
+}
+
 // MARK: - Activation
 
 // How long to wait for an activation to be observed before calling it failed.
@@ -202,9 +213,13 @@ func activate(_ target: Desktop, among all: [Desktop]) throws {
                                 + "on this macOS build. spacejump cannot switch Desktops here.")
     }
 
-    let siblings = all
-        .filter { $0.spaceID != target.spaceID && $0.displayIdentifier == target.displayIdentifier }
-        .map { NSNumber(value: $0.spaceID) }
+    // Siblings come from the full census, not `all`: that list is ordinary
+    // Desktops only, and the Space being left may be a fullscreen one.
+    var siblingIDs = allSpaceIDs(onDisplay: target.displayIdentifier)
+    if siblingIDs.isEmpty {
+        siblingIDs = all.filter { $0.displayIdentifier == target.displayIdentifier }.map(\.spaceID)
+    }
+    let siblings = siblingIDs.filter { $0 != target.spaceID }.map { NSNumber(value: $0) }
 
     guard let show = SkyLight.makeOperation(showClass, initSelector: "initWithSpaces:",
                                             spaces: [NSNumber(value: target.spaceID)]),
